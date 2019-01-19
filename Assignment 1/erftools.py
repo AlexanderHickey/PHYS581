@@ -19,13 +19,18 @@ def erf_taylor(z, nterms=19):
     Return:
         erf_z: Error function evaluated at each number
     '''
+    
     #Cast to numpy array
     z = np.array(z)
     
+    #Array to keep track of terms in series
     terms = np.zeros((nterms,)+z.shape, dtype=np.complex128)
+    
+    #Generate terms in series
     terms[0] = z
-    z2 = -z*z  # move math outside loop
+    z2 = -z*z
     for n in range(1,nterms):
         terms[n] = terms[n-1] * z2 / n * (2*n-1)/(2*n+1)
     
+    #Sum over array of terms
     return np.sum(terms, axis=0) * 2.0 / np.sqrt(np.pi)
