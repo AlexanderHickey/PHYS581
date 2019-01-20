@@ -8,6 +8,7 @@ by loading this file into the __main__ namespace.
 
 import numpy as np
 
+
 def erf_taylor(z, nterms=19):
     '''
     Compute the standard error function using a Laurent series about z=0.
@@ -34,3 +35,31 @@ def erf_taylor(z, nterms=19):
     
     #Sum over array of terms
     return np.sum(terms, axis=0) * 2.0 / np.sqrt(np.pi)
+
+
+def estimate_nterms(z, sig_digs = 10):
+    '''
+    Compute the number of terms needed in the Laurent series expansion of the
+    standard error function to obtain a desired relative precision.
+    
+    Args:
+        z: Array-like, collection of complex numbers
+        sig_digs: 
+        
+    Return:
+        erf_z: Array consisting of the number of terms needed to obtain a
+        desired number of significant digits.
+    '''
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
