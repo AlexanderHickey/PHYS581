@@ -51,7 +51,7 @@ def w(z):
         erf_z: Error function evaluated at each number
     '''
     
-    #Works in first quadrant only
+    #Works in first quadrant only 
     x, y = np.real(z), np.imag(z)
     
     if y<4.29 and x<5.33:
