@@ -37,50 +37,25 @@ def erf_taylor(z, nterms=19):
     return np.sum(terms, axis=0) * 2.0 / np.sqrt(np.pi)
 
 
-def estimate_nterms(z, sig_digs = 10):
-    '''
-    Compute the number of terms needed in the Laurent series expansion of the
-    standard error function to obtain a desired relative precision.
-    
-    Args:
-        z: Array-like, collection of complex numbers
-        sig_digs: Integer, specify the desired number of significant digits
-        
-    Return:
-        erf_z: Array consisting of the number of terms needed to obtain a
-        desired number of significant digits.
-    '''
-    
-    #Initialize counter
-    n, term = 1, z
-    
-    while np.abs(term) > 10**(-sig_digs):
-        
-        n += 1
-        term = (-1)**n * z**(2*n+1)/(special.factorial(n)*(2*n+1))
-    
-    return n
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
 
 def w(z):
+    '''
+    Compute the Faddeeva function in the first quadrant of the complex plane.
+    Algorithm is garunteed an accuracy of at least 10 significant figures,
+    see:
+    
+    Args:
+        z: Single complex number
+        
+    Return:
+        erf_z: Error function evaluated at each number
+    '''
+    
     #Works in first quadrant only
     x, y = np.real(z), np.imag(z)
     
     if y<4.29 and x<5.33:
+        
         s=(1-y/4.29)*np.sqrt(1-x*x/28.41)
         h=1.6*s
         h2 = 2*h
@@ -138,10 +113,7 @@ def w_vec(z):
     capn = ((6+23*s)*inner+0*outer).astype(int)
     nu = ((9+21*s)*inner +8*outer).astype(int)
     
-    hpos = (h>0)*1
-    hneg = np.logical_not(hpos)
-    
-    lamb = (h2**capn)*(hpos)
+    lamb = (h2**capn)*((h>0)*1)
     
     b = np.logical_or(h==0,lamb==0)
     
@@ -186,4 +158,4 @@ def w_vec(z):
     
     return re+im*1.0j
     
-    
+
