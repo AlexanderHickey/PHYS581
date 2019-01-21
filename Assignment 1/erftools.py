@@ -119,26 +119,28 @@ def wQ1_vec(z):
     
     #The remainder of the algorithm is based on the algorithm:
     #https://dl.acm.org/citation.cfm?id=363618
-    #Several modifications are made to use numpy array algebra
+    #Several modifications are made to use numpy array algebra by
+    #replacing if/else statements with boolean arrays
     
     #Mask inner and outer regions of algorithm
     inner = np.logical_and(y<4.29,x<5.33)*1.
     outer = np.logical_not(inner)*1.
     
+    #Define algorithm parameter arrays
     s= (1-y/4.29)*np.abs(np.sqrt(1-x*x/28.41+0.0j))*inner
     h= (1.6*s)*inner
     h2 = 2*h
     capn = ((6+23*s)*inner+0*outer).astype(int)
     nu = ((9+21*s)*inner +8*outer).astype(int)
-    
     lamb = (h2**capn)*((h>0)*1)
-    
     b = np.logical_or(h==0,lamb==0)
     
+    #Initialize a bunch of stuff
     r1 = np.zeros(z.shape)
     r2, s1, s2 = r1.copy(), r1.copy(), r1.copy()
     t1, t2, c = r1.copy(), r1.copy(), r1.copy()
     
+    #Maximum index required to process entire array
     nustart = np.max(nu)
     
     for n in range(nustart,-1,-1):
@@ -152,22 +154,24 @@ def wQ1_vec(z):
         #Negate mask
         mask_ignore = np.logical_not(mask_act)*1
         
-        #Branch needed to avoid using variable without assignment
+        #Update parameters
         t1 = (y+h+np1*r1)*mask_act + t1*mask_ignore
         t2 = (x-np1*r2)*mask_act + t2*mask_ignore
         c= .5/(t1*t1+t2*t2)*mask_act + c*mask_ignore
-        
         r1 = (c*t1)*mask_act + r1*mask_ignore
         r2 = (c*t2)*mask_act+ r2*mask_ignore
         
+        #More masks
         mask2 = np.logical_and(n<=capn,h>0)*1
         mask2not = np.logical_not(mask2)*1
             
+        #Update parameters
         t1 = (lamb + s1)*mask2 + t1*mask2not
         s1 = (r1*t1-r2*s2)*mask2+ s1*mask2not
         s2 = (r2*t1+r1*s2)*mask2+ s1*mask2not
         lamb = (lamb/(h2+mask2not))*mask2+ lamb*mask2not
     
+    #Result
     re =np.exp(-x*x)*(y==0)+1.12837916709551*(r1*b+s1*np.logical_not(b))*(y!=0)
     im = 1.12837916709551*(r2*b+s2*np.logical_not(b))
     
@@ -280,7 +284,7 @@ def erf_vec(z):
 
 
 
-########################################################
+###############################################################################
 #Testing framework
     
 import unittest
