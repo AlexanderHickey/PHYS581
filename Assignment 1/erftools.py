@@ -70,6 +70,8 @@ def wQ1(z):
         lamb = h2**capn
     
     b = h==0 or lamb==0
+    
+    #Initialize parameters
     r1, r2, s1, s2 = 0,0,0,0
     
     for n in range(nu,-1,-1):
