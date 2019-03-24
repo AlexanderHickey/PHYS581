@@ -1,2 +1,0 @@
-conda activate Python27
-ppserver.py -a
