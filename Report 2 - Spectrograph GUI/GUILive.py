@@ -50,7 +50,7 @@ class SeaofBTCapp(tk.Tk):
         
         tk.Tk.__init__(self,*args,**kwargs)
         
-        tk.Tk.iconbitmap(self, default = 'light_icon.ico')
+        tk.Tk.iconbitmap(self, default = 'light.ico')
         
         container = tk.Frame(self)
         container.pack(side='top',fill='both',expand = True)
