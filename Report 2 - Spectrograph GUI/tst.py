@@ -55,9 +55,6 @@ def get_data(integration_time = 20000):
  
         return wlength, intensity
 
-def print_value(val):
-    print(val)
-
 
 class App(tk.Frame):
     '''
@@ -75,22 +72,20 @@ class App(tk.Frame):
         self.winfo_toplevel().title('Ocean Optics USB2000+')
         
         
-        scale = tk.Scale(cont, orient='horizontal', 
-                          from_= 1000, to= 65000, command=print_value)
-        scale.pack(side=tk.LEFT)
         
         
-        #Defines integration time entry box and label
+        #Defines integration time label and slider
         lbl = ttk.Label(cont, text="Integration time (μs):  ", font = FONT)
         lbl.pack(side=tk.LEFT)
-        self.time_ent = ttk.Entry(cont, width=7)
-        self.time_ent.insert(0, '20000')
-        self.time_ent.pack(side=tk.LEFT)
+        
+        self.slide = tk.Scale(cont,orient='horizontal',from_= 1000, to= 65000)
+        self.slide.set(20000)
+        self.slide.pack(side=tk.LEFT)
         
         #Attributes to track if animation is running
         self.running = False #True if animation is currently running
         self.ani = None #True if animation has started at all
-        
+    
         #Defines data collection button
         self.btn = tk.Button(cont, text=' Collect ', command=self.on_click)
         self.btn.pack(side=tk.LEFT)
@@ -113,7 +108,6 @@ class App(tk.Frame):
         self.toolbar = NavigationToolbar2Tk(self.canvas, self)
         self.toolbar.update()
     
-
 
     def on_click(self):
         '''
@@ -149,7 +143,7 @@ class App(tk.Frame):
         self.ani = animation.FuncAnimation(
             self.fig,
             self.update_graph,
-            interval=int(self.time_ent.get())/1000,
+            interval=int(self.slide.get())/1000,
             repeat=False)
         self.running = True
         self.btn.config(text=' Pause ')
@@ -162,7 +156,7 @@ class App(tk.Frame):
         '''
         
         #Retrieve updated integration time
-        int_time = int(self.time_ent.get())
+        int_time = int(self.slide.get())
         
         #Update plot
         self.line.set_data(*get_data(int_time))
