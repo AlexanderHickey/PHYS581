@@ -5,6 +5,8 @@ Created on Fri Apr  5 21:25:58 2019
 @author: Admin
 """
 
+
+
 import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -50,7 +52,7 @@ class SeaofBTCapp(tk.Tk):
         
         tk.Tk.__init__(self,*args,**kwargs)
         
-        tk.Tk.iconbitmap(self, default = 'light.ico')
+        tk.Tk.iconbitmap(self, default = 'light_icon.ico')
         
         container = tk.Frame(self)
         container.pack(side='top',fill='both',expand = True)
