@@ -4,7 +4,7 @@
 This program generates a graphical user interface for an Ocean Optics USB2000+
 spectrograph. The interface includes a collection button, which will interface
 with the spectrograph and plot the intensity versus wavelength. There is also
-a text box to manually set the integration time.
+a slider to manually set the integration time.
 """
 
 
@@ -21,7 +21,7 @@ import seabreeze.spectrometers as sb
 FONT = ('Verdana', 12)
 style.use('ggplot') 
 collec_range = (193,896) #Collection range in nanometers!
-int_range = (0,9500) #Intensity range
+int_range = (0,9500) #Default intensity range
 
 
 
@@ -56,6 +56,7 @@ def get_data(integration_time = 20000):
         return wlength, intensity
 
 
+
 class App(tk.Frame):
     '''
     Class corresponding to main application. Object is the homepage.
@@ -78,14 +79,25 @@ class App(tk.Frame):
         lbl = ttk.Label(cont, text="Integration time (μs):  ", font = FONT)
         lbl.pack(side=tk.LEFT)
         
-        self.slide = tk.Scale(cont,orient='horizontal',from_= 1000, to= 65000)
+        self.slide = tk.Scale(cont,orient='horizontal',from_= 1000, to= 200000)
         self.slide.set(20000)
         self.slide.pack(side=tk.LEFT)
         
-        #Attributes to track if animation is running
-        self.running = False #True if animation is currently running
-        self.ani = None #True if animation has started at all
-    
+        
+        #Defines max intensity label and slider
+        lbl2 = ttk.Label(cont, text="Max intensity:  ", font = FONT)
+        lbl2.pack(side=tk.LEFT)
+        
+        self.slide_max = tk.Scale(cont,orient='horizontal',from_= 1000,to_=90000,command=self.up_tick)
+        self.slide_max.set(int_range[1])
+        self.slide_max.pack(side=tk.LEFT)
+        
+        #Attribute to track if animation is running
+        self.running = False
+        
+        #Initialize animation attribute
+        self.ani = None 
+        
         #Defines data collection button
         self.btn = tk.Button(cont, text=' Collect ', command=self.on_click)
         self.btn.pack(side=tk.LEFT)
@@ -108,7 +120,10 @@ class App(tk.Frame):
         self.toolbar = NavigationToolbar2Tk(self.canvas, self)
         self.toolbar.update()
     
-
+    def up_tick(self,val):
+        
+        self.ax1.set_ylim(0,val)
+        
     def on_click(self):
         '''
         Method to decide the action of the collect button
@@ -139,16 +154,19 @@ class App(tk.Frame):
         Method to start/resume animation
         '''
         
-        
-        self.ani = animation.FuncAnimation(
-            self.fig,
-            self.update_graph,
-            interval=int(self.slide.get())/1000,
-            repeat=False)
+        #Signal that animation is running
         self.running = True
+        
+        #Change button label
         self.btn.config(text=' Pause ')
+        
+        #Start animation
+        self.ani = animation.FuncAnimation(self.fig,
+                                           self.update_graph,
+                                           interval=int(self.slide.get())/1000,
+                                           repeat=False)
         self.ani._start()
-        print('started animation')
+
 
     def update_graph(self, i):
         '''
@@ -160,6 +178,7 @@ class App(tk.Frame):
         
         #Update plot
         self.line.set_data(*get_data(int_time))
+        self.ax1.set_ylim(0,self.slide_max.get())
 
         return self.line,
 
