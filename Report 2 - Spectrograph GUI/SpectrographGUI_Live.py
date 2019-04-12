@@ -3,8 +3,9 @@
 
 This program generates a graphical user interface for an Ocean Optics USB2000+
 spectrograph. The interface includes a collection button, which will interface
-with the spectrograph and plot the intensity versus wavelength. There is also
-a slider to manually set the integration time.
+with the spectrograph and plot the intensity versus wavelength and display
+the output in real time. There is also a slider to manually set the integration 
+time, as well as the maximum intensity on the plot.
 """
 
 
@@ -72,8 +73,11 @@ class App(tk.Frame):
         #Set application title
         self.winfo_toplevel().title('Ocean Optics USB2000+')
         
+        #Attribute to track if animation is running
+        self.running = False
         
-        
+        #Initialize animation attribute
+        self.ani = None 
         
         #Defines integration time label and slider
         lbl = ttk.Label(cont, text="Integration time (μs):  ", font = FONT)
@@ -85,18 +89,12 @@ class App(tk.Frame):
         
         
         #Defines max intensity label and slider
-        lbl2 = ttk.Label(cont, text="Max intensity:  ", font = FONT)
+        lbl2 = ttk.Label(cont, text="  Max intensity:  ", font = FONT)
         lbl2.pack(side=tk.LEFT)
         
-        self.slide_max = tk.Scale(cont,orient='horizontal',from_= 1000,to_=90000,command=self.up_tick)
+        self.slide_max = tk.Scale(cont,orient='horizontal',from_= 1000,to_=90000)
         self.slide_max.set(int_range[1])
         self.slide_max.pack(side=tk.LEFT)
-        
-        #Attribute to track if animation is running
-        self.running = False
-        
-        #Initialize animation attribute
-        self.ani = None 
         
         #Defines data collection button
         self.btn = tk.Button(cont, text=' Collect ', command=self.on_click)
@@ -119,10 +117,7 @@ class App(tk.Frame):
         #Inserts the matplotlib toolbar
         self.toolbar = NavigationToolbar2Tk(self.canvas, self)
         self.toolbar.update()
-    
-    def up_tick(self,val):
-        
-        self.ax1.set_ylim(0,val)
+     
         
     def on_click(self):
         '''
