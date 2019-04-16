@@ -30,15 +30,17 @@ def construct_hamiltonian(psi,t,mu,N):
         
     return H+H.T
 
-def spectrum(H):
+def groundstate(H):
     '''
-    Calculate spectrum and eigenvectors of a Hermitian matrix.
+    Calculate the minimum eigenvalue and corresponding eigenvector of a 
+    Hermitian matrix
     '''
     
-    spec = np.linalg.eigh(H)
+    eigvals, eigvecs = np.linalg.eigh(H)
     
-    return spec[0], spec[1]
-    
+    return eigvals[0], eigvecs[:,0]
+
+
 
 def ground_energy(psi,t,mu,N,groundstate = False):
     '''
@@ -50,9 +52,7 @@ def ground_energy(psi,t,mu,N,groundstate = False):
     
     if groundstate:
         
-        eigvals, eigvecs = spectrum(H)
-        
-        return eigvals[0], eigvecs[:,0]
+        return groundstate(H)
         
     else:
         
@@ -66,37 +66,17 @@ def find_psi(t,mu,N,groundE = False):
     Return ground state energy if groundE = True.
     '''
     
-    psi = scipy.optimize.minimize(ground_energy,0.1,args = (t,mu,N),method='Nelder-Mead',tol=1e-14)
+    psi = scipy.optimize.minimize(ground_energy,0.1,args = (t,mu,N),
+                                  method='Nelder-Mead', tol=1e-13)
     
     if groundE:
         return psi['x'][0], psi['fun']
     
     else:
         return psi['x'][0]
+    
 
-def phase_boundary(mu_max,num_mu,dt):
-    '''
-    Calculate the phase-boundary in t-mu space
-    '''
-    
-    #Dimension of truncated Fock space
-    N = np.int(mu_max)+3
-    
-    mulist = np.linspace(0,mu_max,num_mu)
-    tlist = np.zeros((num_mu))
-    
-    for j in range(num_mu):
-        
-        #Initialize
-        t = E0 = E1 = 0.0
-        
-        #Break from loop when psi != 0
-        while E0 <= E1: 
-             
-            t += dt
-            E0 = ground_energy(0.0,t,mulist[j],N)
-            E1 = ground_energy(0.01,t,mulist[j],N)
-            
-        tlist[j] = t
-    
-    return mulist, tlist
+print(find_psi(0.3,0.5,5))
+
+
+

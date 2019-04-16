@@ -5,7 +5,6 @@ Created on Sun Apr 14 11:37:10 2019
 """
 
 import numpy as np
-import scipy.optimize
 
 
 
@@ -49,49 +48,32 @@ def compute_psi(state):
     
 
 
-def find_psi(t,mu,N):
+def find_psi(t,mu,N,tol = 1e-13):
+    '''
+    Find the value of the superfluid order parameter through by
+    exact-diaganilization iteration.
     
-    ...
     
+    '''
+    
+    #Initial guess for psi
+    psi0 = 1e-3
+    
+    E, state = groundstate(construct_hamiltonian(psi0,t,mu,N))
+    psi = compute_psi(state)
+    
+    while np.abs(psi - psi0) > tol:
+        print(psi)
+        psi0 = psi
+        E, state = groundstate(construct_hamiltonian(psi0,t,mu,N))
+        psi = compute_psi(state)
+        
+    return psi
+        
 
     
-def find_psi(t,mu,N,groundE = False):
-    '''
-    Calculate order parameter which minimizes the free energy.
-    Return ground state energy if groundE = True.
-    '''
-    
-    psi = scipy.optimize.minimize(ground_energy,0.1,args = (t,mu,N),method='Nelder-Mead',tol=1e-14)
-    
-    if groundE:
-        return psi['x'][0], psi['fun']
-    
-    else:
-        return psi['x'][0]
+#find_psi(0.1,0.5,10)
 
-def phase_boundary(mu_max,num_mu,dt):
-    '''
-    Calculate the phase-boundary in t-mu space
-    '''
-    
-    #Dimension of truncated Fock space
-    N = np.int(mu_max)+3
-    
-    mulist = np.linspace(0,mu_max,num_mu)
-    tlist = np.zeros((num_mu))
-    
-    for j in range(num_mu):
-        
-        #Initialize
-        t = E0 = E1 = 0.0
-        
-        #Break from loop when psi != 0
-        while E0 <= E1: 
-             
-            t += dt
-            E0 = ground_energy(0.0,t,mulist[j],N)
-            E1 = ground_energy(0.01,t,mulist[j],N)
-            
-        tlist[j] = t
-    
-    return mulist, tlist
+
+
+
