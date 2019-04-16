@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Sun Apr 14 11:37:10 2019
 
@@ -7,7 +6,7 @@ Created on Sun Apr 14 11:37:10 2019
 
 import numpy as np
 import scipy.optimize
-import timeit
+
 
 
 def construct_hamiltonian(psi,t,mu,N):
@@ -29,33 +28,30 @@ def construct_hamiltonian(psi,t,mu,N):
         
     return H+H.T
 
-def spectrum(H):
+def groundstate(H):
     '''
-    Calculate spectrum and eigenvectors of a Hermitian matrix.
+    Calculate the minimum eigenvalue and corresponding eigenvector of a 
+    Hermitian matrix
     '''
     
-    spec = np.linalg.eigh(H)
+    eigvals, eigvecs = np.linalg.eigh(H)
     
-    return spec[0], spec[1]
+    return eigvals[0], eigvecs[:,0]
+
+
+def compute_psi(state):
+    '''
+    Compute the superfluid order parameter
+    '''
+    N = len(state)
+    
+    return np.sum([state[j]*state[j+1]*np.sqrt(j+1) for j in range(N-1)])
     
 
-def ground_energy(psi,t,mu,N,groundstate = False):
-    '''
-    Calculate the ground state energy for given parameters.
-    Return ground state if True.
-    '''
+
+def find_psi(t,mu,N):
     
-    H = construct_hamiltonian(psi,t,mu,N)
-    
-    if groundstate:
-        
-        eigvals, eigvecs = spectrum(H)
-        
-        return eigvals[0], eigvecs[:,0]
-        
-    else:
-        
-        return np.linalg.eigvalsh(H)[0]
+    ...
     
 
     
