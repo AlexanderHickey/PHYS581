@@ -1,14 +1,23 @@
 """
-Created on Sun Apr 14 11:37:10 2019
-
+exact_diag.py
 @author: Alex Hickey
+
+This module aims to compute the ground state of the Bose-Hubbard model
+by iterating through an exact diagonalization process until self-consistency
+is obtained. The parameter t corresponds to the hopping amplitude and the 
+parameter mu corresponds to the chemical potential. Each of these parameters
+are in units of the on-site interaction energy.
 """
 
+#Import numpy
 import numpy as np
 
+#Set maximum number of bosons per site
+N = 10
 
 
-def construct_hamiltonian(psi,t,mu,N):
+
+def construct_hamiltonian(psi,t,mu):
     '''
     Construct MF Hamiltonian in the occupation number basis.
     '''
@@ -42,13 +51,12 @@ def compute_psi(state):
     '''
     Compute the superfluid order parameter
     '''
-    N = len(state)
     
-    return np.sum([state[j]*state[j+1]*np.sqrt(j+1) for j in range(N-1)])
+    return np.sum([state[j]*state[j+1]*np.sqrt(j+1) for j in range(N)])
     
 
 
-def find_psi(t,mu,N,tol = 1e-13):
+def find_psi(t,mu,tol = 1e-13):
     '''
     Find the value of the superfluid order parameter through by
     exact-diaganilization iteration.
@@ -59,20 +67,51 @@ def find_psi(t,mu,N,tol = 1e-13):
     #Initial guess for psi
     psi0 = 1e-3
     
-    E, state = groundstate(construct_hamiltonian(psi0,t,mu,N))
+    E, state = groundstate(construct_hamiltonian(psi0,t,mu))
     psi = compute_psi(state)
     
     while np.abs(psi - psi0) > tol:
-        print(psi)
+
         psi0 = psi
-        E, state = groundstate(construct_hamiltonian(psi0,t,mu,N))
+        E, state = groundstate(construct_hamiltonian(psi0,t,mu))
         psi = compute_psi(state)
         
     return psi
         
 
     
-#find_psi(0.1,0.5,10)
+###############################################################################
+#Testing framework
+    
+import unittest
+
+class TestErf(unittest.TestCase):
+    '''
+    Unit testing class for functions in the exact_diag.py module
+    '''
+    
+    def test_ErfTaylor(self):
+        '''
+        Test that the order parameter is zero for a known insulating ground
+        state in the paramater space (t=0.05,mu=0.5).
+        '''
+        
+        #Set system parameters for a known insulator
+        t, mu = 0.05, 0.5
+        
+        #Set tolerance
+        tol = 1e-13
+        
+        #Compute order parameter
+        psi = find_psi(t,mu,tol=tol)
+        
+        self.assertTrue(np.abs(psi) < tol) 
+    
+
+#Run tests if in main namespace
+if __name__ == '__main__':
+    unittest.main(argv=[''],verbosity=2,exit=False)
+
 
 
 

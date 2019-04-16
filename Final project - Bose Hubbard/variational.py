@@ -1,82 +1,88 @@
-# -*- coding: utf-8 -*-
 """
-Created on Sun Apr 14 11:37:13 2019
-
+variational.py
 @author: Alex Hickey
-"""
 
+This module aims to compute the ground state of the Bose-Hubbard model
+by using the variational principle. The parameter t corresponds to the hopping 
+amplitude and the parameter mu corresponds to the chemical potential. Each of 
+these parameters are in units of the on-site interaction energy.
+"""
 
 import numpy as np
 import scipy.optimize
 
 
+#Set the maximum number of bosons per site
+N = 10
 
-def construct_hamiltonian(psi,t,mu,N):
-    '''
-    Construct MF Hamiltonian in the occupation number basis.
-    '''
-    
-    H = np.zeros((N+1, N+1))
+#Define arrays to call in functions
+n_arr = np.arange(N+1)
+nC2_arr = 0.5*n_arr*(n_arr-1.0)
+sqr_arr = np.sqrt(n_arr)
 
-    for i in range(0, N+1):
-        
-        #Diagonal components
-        H[i, i] = (i*(i-1)/2-mu*i+t*psi*psi)/2.0
-        
-        #Upper-diagonal components
-        if i != N:
-            
-            H[i,i+1] = -t*psi*np.sqrt(i+1)
-        
-    return H+H.T
 
-def groundstate(H):
+def compute_psi(state):
     '''
-    Calculate the minimum eigenvalue and corresponding eigenvector of a 
-    Hermitian matrix
+    Compute the superfluid order parameter <a>
     '''
     
-    eigvals, eigvecs = np.linalg.eigh(H)
-    
-    return eigvals[0], eigvecs[:,0]
+    #return np.sum(state*np.roll(state,-1)*sqr_arr)/np.sum(state*state)
+    return np.sum(state*np.roll(state*sqr_arr,-1))/np.sum(state*state)
 
 
-
-def ground_energy(psi,t,mu,N,groundstate = False):
+def expH(state,t,mu):
     '''
-    Calculate the ground state energy for given parameters.
-    Return ground state if True.
+    Compute the expectation value of the mean-field Hamiltonian for a given
+    state.
     '''
     
-    H = construct_hamiltonian(psi,t,mu,N)
+    #Compute order parameter for given state
+    psi = compute_psi(state)
     
-    if groundstate:
-        
-        return groundstate(H)
-        
-    else:
-        
-        return np.linalg.eigvalsh(H)[0]
+    #Compute hopping contribution
+    hop = -t*psi*psi
     
+    #Compute on-site interaction contribution
+    onsite = np.sum(state*state*nC2_arr)/np.sum(state*state)
+    
+    #Compute chemical potential contribution
+    chem = -mu*np.sum(state*state*n_arr)/np.sum(state*state)
+    
+    return hop+onsite+chem
+
+
 
     
-def find_psi(t,mu,N,groundE = False):
+def ground(t,mu,tol = 1e-13):
     '''
     Calculate order parameter which minimizes the free energy.
-    Return ground state energy if groundE = True.
+    
     '''
     
-    psi = scipy.optimize.minimize(ground_energy,0.1,args = (t,mu,N),
-                                  method='Nelder-Mead', tol=1e-13)
+    #Initial guess is uniform superposition
+    y0 = np.ones(N+1)/np.sqrt(N+1)
     
-    if groundE:
-        return psi['x'][0], psi['fun']
+    res = scipy.optimize.minimize(expH,y0,args = (t,mu),tol=tol)
     
-    else:
-        return psi['x'][0]
+    
+    return res.x
+
+
+
+def find_psi(t,mu,tol = 1e-13):
+    '''
+    Find the value of the superfluid order parameter through by
+    exact-diaganilization iteration.
+    
+    
+    '''
+    
+    groundstate = ground(t,mu,tol=tol)
+        
+    return compute_psi(groundstate)
     
 
-print(find_psi(0.3,0.5,5))
+print(find_psi(0.1,0.5))
 
 
 

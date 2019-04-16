@@ -9,29 +9,35 @@ Boundary search algorithm
 
 
 
-def phase_boundary(mu_max,num_mu,dt):
+def bd(tlist,mu,V,Nmax, minsteps = 12, tol = 1e-9):
     '''
-    Calculate the phase-boundary in t-mu space
+    Calculate the value of t required to transition out of an insulator state
+    by recursively halving a provided list.
     '''
     
-    #Dimension of truncated Fock space
-    N = np.int(mu_max)+3
-    
-    mulist = np.linspace(0,mu_max,num_mu)
-    tlist = np.zeros((num_mu))
-    
-    for j in range(num_mu):
+    #Return value once list is irreducible
+    if len(tlist) <= 2:
         
-        #Initialize
-        t = E0 = E1 = 0.0
+        return tlist[0]
+    
+    else:
         
-        #Break from loop when psi != 0
-        while E0 <= E1: 
-             
-            t += dt
-            E0 = ground_energy(0.0,t,mulist[j],N)
-            E1 = ground_energy(0.01,t,mulist[j],N)
+        indx = len(tlist) // 2
+        t = tlist[indx]
+        thA, thB = theta_tight(mu,V)
+        mfparams = np.array([thA*1.0,thB*1.0,tol,2*tol])
+        
+        #Step forward in minimization routine
+        for count in range(minsteps):
+         
+            mfparams = minimize_routine(mfparams,t,mu,V,Nmax)
             
-        tlist[j] = t
-    
-    return mulist, tlist
+        #Chosen t corresponds to insulator
+        if np.max(mfparams[2:]) < 2*tol:
+            
+            return insulator_bd(tlist[indx:],mu,V,Nmax)
+        
+        #Chosen t corresponds to superfluid
+        else:
+            
+            return insulator_bd(tlist[:indx],mu,V,Nmax)
