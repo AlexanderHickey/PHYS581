@@ -1,18 +1,43 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Apr 14 11:36:39 2019
-
+bdsearch.py
 @author: Alex Hickey
 
-Boundary search algorithm
+This module aims to search through the the parameter space and find the value 
+of t that lies on the insulator-superfluid phase boundary for a given mu.
 """
 
+#Import modules
+import numpy as np
 
 
-def bd(tlist,mu,V,Nmax, minsteps = 12, tol = 1e-9):
+def isSF(psi, tol = 1e-3):
+    '''
+    Check if computed order parameter corresponds to a superfluid phase.
+    
+    Args:
+        psi: Computed order parameter
+        tol: Tolerance, below tol the order parameter is assumed to be zero.
+        
+    Return:
+        isSF: Boolean, True if in superfluid phase 
+    '''
+    
+    return np.abs(psi) > tol 
+
+
+def bd(mu,tlist,find_psi):
     '''
     Calculate the value of t required to transition out of an insulator state
     by recursively halving a provided list.
+    
+    Args:
+        tlist: List of values of t to iterate through reursively
+        mu: Value of mu
+        find_psi: Function used to compute the order parameter
+        
+    Return:
+        t: Value of t on the phase boundary
     '''
     
     #Return value once list is irreducible
@@ -20,24 +45,22 @@ def bd(tlist,mu,V,Nmax, minsteps = 12, tol = 1e-9):
         
         return tlist[0]
     
+    #Otherwise divide list in half
     else:
         
         indx = len(tlist) // 2
         t = tlist[indx]
-        thA, thB = theta_tight(mu,V)
-        mfparams = np.array([thA*1.0,thB*1.0,tol,2*tol])
         
-        #Step forward in minimization routine
-        for count in range(minsteps):
-         
-            mfparams = minimize_routine(mfparams,t,mu,V,Nmax)
-            
-        #Chosen t corresponds to insulator
-        if np.max(mfparams[2:]) < 2*tol:
-            
-            return insulator_bd(tlist[indx:],mu,V,Nmax)
+        #Compute psi with given function
+        psi = find_psi(t,mu)
         
         #Chosen t corresponds to superfluid
+        if isSF(psi):
+            
+            return bd(mu,tlist[:indx],find_psi)
+        
+        #Chosen t corresponds to insulator
         else:
             
-            return insulator_bd(tlist[:indx],mu,V,Nmax)
+            return bd(mu,tlist[indx:],find_psi)
+    
