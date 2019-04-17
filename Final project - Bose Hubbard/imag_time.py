@@ -89,7 +89,7 @@ def H(state,psi,t,mu):
     return newstate
 
 
-def RK5step(y,psi,t,mu,h=.08):
+def RK5step(y,psi,t,mu,h=.07):
     '''
     Takes a step forward in the RK5 routine for the imaginary-time
     Schrodinger equation.
@@ -121,7 +121,7 @@ def RK5step(y,psi,t,mu,h=.08):
 
 
 
-def find_gnd(t,mu,tol = 1e-11,max_it=100000):
+def find_gnd(t,mu,tol = 1e-6,max_it=300000):
     '''
     Compute the ground state using imaginary time propagation by iterating 
     the RK5 step function.
@@ -165,7 +165,8 @@ def find_gnd(t,mu,tol = 1e-11,max_it=100000):
         if cnt> max_it:
             print('Did not converge after '+str(max_it)+' iterations')
             break
-    
+        
+
     return y, psi 
 
 
@@ -207,6 +208,7 @@ def bd(mu):
     return bdsearch.bd(mu,tlist,find_psi)
 
 
+
 ###############################################################################
 #Testing framework
     
@@ -227,7 +229,7 @@ class TestImagtime(unittest.TestCase):
         t, mu = 0.05, 0.5
         
         #Set tolerance
-        tol = 1e-8
+        tol = 1e-4
         
         #Compute order parameter
         psi = find_psi(t,mu)
